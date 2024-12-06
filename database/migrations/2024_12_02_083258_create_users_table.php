@@ -17,8 +17,19 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['admin', 'employee'])->default('employee');
+            $table->foreignId('departement_id')
+                  ->nullable()
+                  ->constrained('departements')
+                  ->nullOnDelete();
+            $table->string('phone_number')->nullable();
+            $table->text('address')->nullable();
+            $table->string('position')->nullable(); // jabatan
+            $table->string('employee_id')->unique()->nullable(); // nomor induk pegawai
+            $table->string('photo')->nullable(); // Tambahkan kolom foto
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes(); // untuk fitur soft delete
         });
     }
 
