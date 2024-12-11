@@ -52,28 +52,18 @@ class UserResource extends Resource
                                     ->required(fn (string $context): bool => $context === 'create')
                                     ->dehydrated(fn ($state) => filled($state))
                                     ->maxLength(255),
-                                Forms\Components\ToggleButtons::make('role')
-                                    ->label('Posisi')
-                                    ->options([
-                                        'admin' => 'Admin', 
-                                        'employee' => 'Karyawan'
-                                    ])
-                                    ->inline()
-                                    ->grouped()
-                                    ->colors([
-                                        'admin' => 'success',
-                                        'employee' => 'info'
-                                    ])
-                                    ->icons([
-                                        'admin' => 'heroicon-m-shield-check',
-                                        'employee' => 'heroicon-m-user'
-                                    ])
-                                    ->required(),
                                 Forms\Components\Select::make('departement_id')
                                     ->label('Departemen')
                                     ->relationship('departement', 'name')
                                     ->searchable()
                                     ->preload(),
+                                Forms\Components\Select::make('roles')
+                                    ->label('Hak Akses')
+                                    ->multiple()
+                                    ->relationship('roles', 'name')
+                                    ->preload()
+                                    ->searchable()
+                                    ->required(),
                             ])
                             ->columns(2),
 
@@ -135,18 +125,6 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('role')
-                    ->label('Posisi')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'admin' => 'success', 
-                        'employee' => 'warning',
-                    })
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
-                    ->icon(fn (string $state): string => match ($state) {
-                        'admin' => 'heroicon-m-shield-check',
-                        'employee' => 'heroicon-m-user',
-                    }),
                 Tables\Columns\TextColumn::make('departement.name')
                     ->label('Departemen')
                     ->sortable(),
@@ -176,14 +154,13 @@ class UserResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('roles.name')
+                    ->label('Role')
+                    ->badge()
+                    ->separator(',')
+                    ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('role')
-                    ->label('Posisi')
-                    ->options([
-                        'admin' => 'Admin',
-                        'employee' => 'Karyawan'
-                    ]),
                 Tables\Filters\SelectFilter::make('departement')
                     ->label('Departemen')
                     ->relationship('departement', 'name'),

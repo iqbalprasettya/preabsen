@@ -13,6 +13,11 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Support\Enums\FontWeight;
+use Illuminate\Support\Facades\Storage;
 
 class LeaveRequestResource extends Resource
 {
@@ -25,26 +30,6 @@ class LeaveRequestResource extends Resource
     protected static ?string $navigationLabel = 'Permohonan Cuti';
 
     protected static ?int $navigationSort = 2;
-
-    public static function canEdit(Model $record): bool 
-    {
-        return $record instanceof LeaveRequest && $record->status === 'pending';
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        return $record instanceof LeaveRequest && $record->status === 'pending';
-    }
-
-    public static function canDeleteAny(): bool
-    {
-        return false;
-    }
-
-    public static function canForceDelete(Model $record): bool
-    {
-        return $record instanceof LeaveRequest && $record->status === 'pending';
-    }
 
     public static function form(Form $form): Form
     {
@@ -77,18 +62,14 @@ class LeaveRequestResource extends Resource
     public static function getFormSchema(): array
     {
         return [
-            Forms\Components\Select::make('user_id')
-                ->relationship('user', 'name')
-                ->default(fn() => auth()->id())
-                ->disabled(fn() => auth()->user()->role !== 'admin')
-                ->dehydrated()
-                ->required(),
+            Forms\Components\Hidden::make('user_id')
+                ->default(fn() => auth()->id()),
 
             Forms\Components\Select::make('type')
                 ->options([
                     'annual' => 'Cuti Tahunan',
                     'sick' => 'Sakit',
-                    'important' => 'Kepentingan', 
+                    'important' => 'Kepentingan',
                     'other' => 'Lainnya'
                 ])
                 ->required(),
@@ -109,22 +90,12 @@ class LeaveRequestResource extends Resource
                 ->maxSize(5120)
                 ->acceptedFileTypes([
                     'image/*',
-                    'application/pdf', 
+                    'application/pdf',
                     'application/msword',
                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
                 ])
                 ->downloadable()
                 ->openable(),
-
-            Forms\Components\Select::make('status')
-                ->options([
-                    'pending' => 'Pending',
-                    'approved' => 'Approved',
-                    'rejected' => 'Rejected'
-                ])
-                ->default('pending')
-                ->hidden(fn() => auth()->user()->role !== 'admin')
-                ->required(),
         ];
     }
 
@@ -136,23 +107,23 @@ class LeaveRequestResource extends Resource
                     ->label('Nama Karyawan')
                     ->searchable()
                     ->sortable(),
-                    
+
                 Tables\Columns\TextColumn::make('type')
                     ->label('Tipe Cuti')
                     ->badge()
-                    ->icon(fn (string $state): string => match ($state) {
+                    ->icon(fn(string $state): string => match ($state) {
                         'annual' => 'heroicon-m-calendar',
                         'sick' => 'heroicon-m-heart',
-                        'important' => 'heroicon-m-exclamation-triangle', 
+                        'important' => 'heroicon-m-exclamation-triangle',
                         'other' => 'heroicon-m-document',
                     })
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'annual' => 'info',
                         'sick' => 'warning',
                         'important' => 'danger',
                         'other' => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'annual' => 'Cuti Tahunan',
                         'sick' => 'Sakit',
                         'important' => 'Kepentingan',
@@ -165,24 +136,24 @@ class LeaveRequestResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('end_date')
-                    ->label('Tanggal Selesai') 
+                    ->label('Tanggal Selesai')
                     ->date('d M Y')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->icon(fn (string $state): string => match ($state) {
+                    ->icon(fn(string $state): string => match ($state) {
                         'pending' => 'heroicon-m-clock',
                         'approved' => 'heroicon-m-check-circle',
                         'rejected' => 'heroicon-m-x-circle',
                     })
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'pending' => 'gray',
-                        'approved' => 'success', 
+                        'approved' => 'success',
                         'rejected' => 'danger',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'pending' => 'Menunggu',
                         'approved' => 'Disetujui',
                         'rejected' => 'Ditolak',
@@ -194,21 +165,61 @@ class LeaveRequestResource extends Resource
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
+            ->modifyQueryUsing(function (Builder $query) {
+                if (!auth()->user()->hasRole(['super_admin', 'admin'])) {
+                    $query->where('user_id', auth()->id());
+                }
+            })
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'pending' => 'Menunggu',
+                        'approved' => 'Disetujui',
+                        'rejected' => 'Ditolak'
+                    ])
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->visible(fn (LeaveRequest $record): bool => $record->status === 'pending'),
+                    ->visible(fn(LeaveRequest $record): bool => auth()->user()->can('update', $record)),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn (LeaveRequest $record): bool => $record->status === 'pending'),
-                Tables\Actions\ViewAction::make(),
+                    ->visible(fn(LeaveRequest $record): bool => auth()->user()->can('delete', $record)),
+                Tables\Actions\ViewAction::make()
+                    ->visible(fn(LeaveRequest $record): bool => auth()->user()->can('view', $record)),
+                Tables\Actions\Action::make('approve')
+                    ->label('Setujui')
+                    ->icon('heroicon-o-check')
+                    ->color('success')
+                    ->action(function (LeaveRequest $record) {
+                        $record->update([
+                            'status' => 'approved',
+                            'approved_by' => auth()->id(),
+                            'approved_at' => now(),
+                        ]);
+                    })
+                    ->visible(
+                        fn(LeaveRequest $record): bool =>
+                        auth()->user()->can('approve', $record) &&
+                            $record->status === 'pending'
+                    ),
+
+                Tables\Actions\Action::make('reject')
+                    ->label('Tolak')
+                    ->icon('heroicon-o-x-mark')
+                    ->color('danger')
+                    ->action(function (LeaveRequest $record) {
+                        $record->update([
+                            'status' => 'rejected',
+                            'approved_by' => auth()->id(),
+                            'approved_at' => now(),
+                        ]);
+                    })
+                    ->visible(
+                        fn(LeaveRequest $record): bool =>
+                        auth()->user()->can('reject', $record) &&
+                            $record->status === 'pending'
+                    ),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array
@@ -229,17 +240,85 @@ class LeaveRequestResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
-
-        if (! auth()->user()->role === 'admin') {
+        $query = static::getModel()::where('status', 'pending');
+        
+        if (!auth()->user()->hasRole(['super_admin', 'admin'])) {
             $query->where('user_id', auth()->id());
         }
+        
+        return $query->count();
+    }
 
-        return $query;
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('Informasi Karyawan')
+                    ->schema([
+                        TextEntry::make('user.name')
+                            ->label('Nama Karyawan'),
+                        TextEntry::make('user.employee_id')
+                            ->label('NIP'),
+                        TextEntry::make('user.departement.name')
+                            ->label('Departemen'),
+                    ])
+                    ->columns(3),
+
+                Section::make('Detail Pengajuan Cuti')
+                    ->schema([
+                        TextEntry::make('type')
+                            ->label('Tipe Cuti')
+                            ->badge()
+                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                'annual' => 'Cuti Tahunan',
+                                'sick' => 'Sakit',
+                                'important' => 'Kepentingan',
+                                'other' => 'Lainnya',
+                            })
+                            ->color(fn(string $state): string => match ($state) {
+                                'annual' => 'info',
+                                'sick' => 'warning',
+                                'important' => 'danger',
+                                'other' => 'gray',
+                            }),
+                        TextEntry::make('start_date')
+                            ->label('Tanggal Mulai')
+                            ->date('d M Y'),
+                        TextEntry::make('end_date')
+                            ->label('Tanggal Selesai')
+                            ->date('d M Y'),
+                        TextEntry::make('description')
+                            ->label('Keterangan')
+                            ->columnSpanFull(),
+                        TextEntry::make('attachment')
+                            ->label('Lampiran')
+                            ->formatStateUsing(function ($state) {
+                                if (!$state) return '-';
+                                return 'Lihat Lampiran';
+                            })
+                            ->url(fn($record) => $record->attachment ? Storage::url($record->attachment) : null)
+                            ->openUrlInNewTab()
+                            ->icon('heroicon-m-paper-clip')
+                            ->color('primary')
+                            ->weight(FontWeight::Bold),
+                        TextEntry::make('status')
+                            ->label('Status')
+                            ->badge()
+                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                'pending' => 'Menunggu',
+                                'approved' => 'Disetujui',
+                                'rejected' => 'Ditolak',
+                            })
+                            ->color(fn(string $state): string => match ($state) {
+                                'pending' => 'gray',
+                                'approved' => 'success',
+                                'rejected' => 'danger',
+                            }),
+                        TextEntry::make('created_at')
+                            ->label('Diajukan Pada')
+                            ->dateTime('d M Y H:i'),
+                    ])
+                    ->columns(3),
+            ]);
     }
 }

@@ -13,17 +13,22 @@ class LeaveRequestObserver
      */
     public function created(LeaveRequest $leaveRequest): void
     {
-        $recipient = User::where('role', 'admin')->first();
-        Notification::make()
-            ->title('Pengajuan Cuti Baru')
-            ->icon('heroicon-o-clipboard-document-check')
-            ->body('Pengajuan cuti baru dari: ' . $leaveRequest->user->name)
-            ->actions([
-                \Filament\Notifications\Actions\Action::make('view')
-                    ->label('Lihat Pengajuan')
-                    ->url('/admin/approvals/')
-            ])
-            ->sendToDatabase($recipient);
+        $recipients = User::whereHas('roles', function ($query) {
+            $query->whereIn('name', ['super_admin', 'admin']);
+        })->get();
+
+        foreach ($recipients as $recipient) {
+            Notification::make()
+                ->title('Pengajuan Cuti Baru')
+                ->icon('heroicon-o-clipboard-document-check')
+                ->body('Pengajuan cuti baru dari: ' . $leaveRequest->user->name)
+                ->actions([
+                    \Filament\Notifications\Actions\Action::make('view')
+                        ->label('Lihat Pengajuan')
+                        ->url('/admin/leave-requests/')
+                ])
+                ->sendToDatabase($recipient);
+        }
     }
 
     /**
@@ -39,7 +44,7 @@ class LeaveRequestObserver
                 Notification::make()
                     ->title('Pengajuan Cuti Disetujui')
                     ->icon('heroicon-o-check-circle')
-                    ->body('Selamat! Pengajuan cuti Anda telah disetujui.')
+                    ->body('Selamat! Pengajuan cuti telah disetujui.')
                     ->actions([
                         \Filament\Notifications\Actions\Action::make('view')
                             ->label('Lihat Detail')
@@ -50,7 +55,7 @@ class LeaveRequestObserver
                 Notification::make()
                     ->title('Pengajuan Cuti Ditolak')
                     ->icon('heroicon-o-x-circle')
-                    ->body('Maaf, pengajuan cuti Anda ditolak.')
+                    ->body('Maaf, pengajuan cuti ditolak.')
                     ->actions([
                         \Filament\Notifications\Actions\Action::make('view')
                             ->label('Lihat Detail')
@@ -63,7 +68,7 @@ class LeaveRequestObserver
             Notification::make()
                 ->title('Perubahan Data Pengajuan')
                 ->icon('heroicon-o-pencil')
-                ->body('Data pengajuan izin Anda telah diperbarui. Silakan cek detail perubahan.')
+                ->body('Data pengajuan izin telah diperbarui. Silakan cek detail perubahan.')
                 ->actions([
                     \Filament\Notifications\Actions\Action::make('view')
                         ->label('Lihat Detail')
@@ -82,7 +87,7 @@ class LeaveRequestObserver
         Notification::make()
             ->title('Pengajuan Cuti Dihapus')
             ->icon('heroicon-o-trash')
-            ->body('Pengajuan cuti Anda telah dihapus')
+            ->body('Pengajuan cuti telah dihapus')
             ->actions([
                 \Filament\Notifications\Actions\Action::make('view')
                     ->label('Lihat Riwayat')
@@ -100,7 +105,7 @@ class LeaveRequestObserver
         Notification::make()
             ->title('Pengajuan Cuti Dipulihkan')
             ->icon('heroicon-o-arrow-path')
-            ->body('Pengajuan cuti Anda telah dipulihkan')
+            ->body('Pengajuan cuti telah dipulihkan')
             ->actions([
                 \Filament\Notifications\Actions\Action::make('view')
                     ->label('Lihat Detail')
@@ -118,7 +123,7 @@ class LeaveRequestObserver
         Notification::make()
             ->title('Pengajuan Cuti Dihapus Permanen')
             ->icon('heroicon-o-x-circle')
-            ->body('Pengajuan cuti Anda telah dihapus secara permanen')
+            ->body('Pengajuan cuti telah dihapus secara permanen')
             ->actions([
                 \Filament\Notifications\Actions\Action::make('view')
                     ->label('Lihat Riwayat')

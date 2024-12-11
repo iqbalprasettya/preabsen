@@ -17,7 +17,7 @@ class AttendanceResource extends Resource
 {
     protected static ?string $model = Attendance::class;
     protected static ?string $navigationIcon = 'heroicon-o-clock';
-    protected static ?string $navigationLabel = 'Kehadiran';
+    protected static ?string $navigationLabel = 'Absensi';
     protected static ?int $navigationSort = 1;
     protected static ?string $recordTitleAttribute = 'id';
     protected static ?string $slug = 'attendance';
@@ -70,6 +70,7 @@ class AttendanceResource extends Resource
                 ->relationship('user', 'name')
                 ->default(fn() => auth()->id())
                 ->disabled(fn() => auth()->user()->role !== 'admin')
+                ->dehydrated(true)
                 ->required(),
         ];
     }
@@ -80,13 +81,32 @@ class AttendanceResource extends Resource
             Forms\Components\DateTimePicker::make('check_in')
                 ->label('Waktu Masuk')
                 ->required(),
-            Forms\Components\TextInput::make('check_in_location')
-                ->label('Lokasi Masuk')
-                ->required(),
+            Forms\Components\TextInput::make('check_in_address')
+                ->label('Alamat Masuk'),
+            Forms\Components\Grid::make(2)
+                ->schema([
+                    Forms\Components\TextInput::make('check_in_latitude')
+                        ->label('Latitude Masuk')
+                        ->numeric()
+                        ->required(),
+                    Forms\Components\TextInput::make('check_in_longitude')
+                        ->label('Longitude Masuk')
+                        ->numeric()
+                        ->required(),
+                ]),
             Forms\Components\DateTimePicker::make('check_out')
                 ->label('Waktu Keluar'),
-            Forms\Components\TextInput::make('check_out_location')
-                ->label('Lokasi Keluar'),
+            Forms\Components\TextInput::make('check_out_address')
+                ->label('Alamat Keluar'),
+            Forms\Components\Grid::make(2)
+                ->schema([
+                    Forms\Components\TextInput::make('check_out_latitude')
+                        ->label('Latitude Keluar')
+                        ->numeric(),
+                    Forms\Components\TextInput::make('check_out_longitude')
+                        ->label('Longitude Keluar')
+                        ->numeric(),
+                ]),
         ];
     }
 
@@ -113,9 +133,10 @@ class AttendanceResource extends Resource
                 ->options([
                     'present' => 'Hadir',
                     'late' => 'Terlambat', 
+                    'permission' => 'Izin',
+                    'sick' => 'Sakit',
                     'absent' => 'Tidak Hadir',
-                ])
-                ->required(),
+                ]),
             Forms\Components\Textarea::make('notes')
                 ->label('Catatan')
                 ->columnSpanFull(),
@@ -147,16 +168,22 @@ class AttendanceResource extends Resource
                     ->icon(fn (string $state): string => match ($state) {
                         'present' => 'heroicon-m-check-circle',
                         'late' => 'heroicon-m-clock',
+                        'permission' => 'heroicon-m-document-text',
+                        'sick' => 'heroicon-m-heart',
                         'absent' => 'heroicon-m-x-circle',
                     })
                     ->color(fn (string $state): string => match ($state) {
                         'present' => 'success',
                         'late' => 'warning',
+                        'permission' => 'info',
+                        'sick' => 'danger',
                         'absent' => 'danger',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'present' => 'Hadir',
                         'late' => 'Terlambat',
+                        'permission' => 'Izin',
+                        'sick' => 'Sakit',
                         'absent' => 'Tidak Hadir',
                     }),
             ])
@@ -166,6 +193,7 @@ class AttendanceResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('leave_requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->enum('type', ['sick', 'permission']);
+            $table->enum('type', ['annual', 'sick', 'important', 'other']);
             $table->date('start_date');
             $table->date('end_date');
             $table->text('description');
