@@ -57,6 +57,16 @@ class UserResource extends Resource
                                     ->relationship('departement', 'name')
                                     ->searchable()
                                     ->preload(),
+                                Forms\Components\Select::make('office_location_id')
+                                    ->label('Lokasi Kantor')
+                                    ->relationship('officeLocation', 'name')
+                                    ->searchable()
+                                    ->preload(),
+                                Forms\Components\Select::make('work_schedule_id')
+                                    ->label('Jadwal Kerja')
+                                    ->relationship('workSchedule', 'name')
+                                    ->searchable()
+                                    ->preload(),
                                 Forms\Components\Select::make('roles')
                                     ->label('Hak Akses')
                                     ->multiple()
@@ -117,7 +127,8 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('photo')
                     ->circular()
-                    ->defaultImageUrl(url('/storage/user-photos/default.png')),
+                    ->defaultImageUrl(url('/storage/user-photos/default.png'))
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')
                     ->searchable()
@@ -128,13 +139,20 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('departement.name')
                     ->label('Departemen')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('officeLocation.name')
+                    ->label('Lokasi Kantor')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('workSchedule.name')
+                    ->label('Jadwal Kerja')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('phone_number')
                     ->label('Nomor Telepon')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('position')
                     ->label('Jabatan')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('employee_id')
                     ->label('NIP')
                     ->searchable()
@@ -164,9 +182,16 @@ class UserResource extends Resource
                 Tables\Filters\SelectFilter::make('departement')
                     ->label('Departemen')
                     ->relationship('departement', 'name'),
+                Tables\Filters\SelectFilter::make('office_location')
+                    ->label('Lokasi Kantor')
+                    ->relationship('officeLocation', 'name'),
+                Tables\Filters\SelectFilter::make('work_schedule')
+                    ->label('Jadwal Kerja')
+                    ->relationship('workSchedule', 'name'),
                 Tables\Filters\TrashedFilter::make()
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),

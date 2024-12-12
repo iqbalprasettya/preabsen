@@ -21,6 +21,14 @@ return new class extends Migration
                   ->nullable()
                   ->constrained('departements')
                   ->nullOnDelete();
+            $table->foreignId('office_location_id')
+                  ->nullable()
+                  ->constrained('office_locations')
+                  ->nullOnDelete();
+            $table->foreignId('work_schedule_id')
+                  ->nullable()
+                  ->constrained('work_schedules')
+                  ->nullOnDelete();
             $table->string('phone_number')->nullable();
             $table->text('address')->nullable();
             $table->string('position')->nullable(); // jabatan

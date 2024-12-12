@@ -29,6 +29,8 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'role',
         'departement_id',
+        'office_location_id',
+        'work_schedule_id',
         'phone_number',
         'address',
         'position',
@@ -59,6 +61,16 @@ class User extends Authenticatable implements FilamentUser
     public function departement(): BelongsTo
     {
         return $this->belongsTo(Departement::class);
+    }
+
+    public function officeLocation(): BelongsTo
+    {
+        return $this->belongsTo(OfficeLocation::class);
+    }
+
+    public function workSchedule(): BelongsTo
+    {
+        return $this->belongsTo(WorkSchedule::class);
     }
 
     public function attendances()

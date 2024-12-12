@@ -1,0 +1,47 @@
+{
+    "current_page": 1,
+    "data": [
+        {
+            "id": 2,
+            "user_id": 3,
+            "type": "sick",
+            "start_date": "2024-12-12T00:00:00.000000Z",
+            "end_date": "2024-12-12T00:00:00.000000Z",
+            "description": "Izin Atit",
+            "attachment": "leave-attachments/01JEWWPRKTSB2XDSMHXF7J9YYW.jpeg",
+            "status": "pending",
+            "approved_by": null,
+            "approved_at": null,
+            "created_at": "2024-12-12T07:35:34.000000Z",
+            "updated_at": "2024-12-12T07:35:34.000000Z",
+            "deleted_at": null
+        }
+    ],
+    "first_page_url": "http://localhost:8000/api/v1/leave-requests?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://localhost:8000/api/v1/leave-requests?page=1",
+    "links": [
+        {
+            "url": null,
+            "label": "&laquo; Previous",
+            "active": false
+        },
+        {
+            "url": "http://localhost:8000/api/v1/leave-requests?page=1",
+            "label": "1",
+            "active": true
+        },
+        {
+            "url": null,
+            "label": "Next &raquo;",
+            "active": false
+        }
+    ],
+    "next_page_url": null,
+    "path": "http://localhost:8000/api/v1/leave-requests",
+    "per_page": 10,
+    "prev_page_url": null,
+    "to": 1,
+    "total": 1
+}

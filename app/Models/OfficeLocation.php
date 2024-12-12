@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OfficeLocation extends Model
 {
@@ -23,4 +24,10 @@ class OfficeLocation extends Model
         'longitude' => 'decimal:8',
         'radius' => 'integer'
     ];
+
+    // Tambahkan relasi ke users
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
 }

@@ -37,4 +37,4 @@ class WorkScheduleSeeder extends Seeder
             WorkSchedule::create($schedule);
         }
     }
-} 
+}

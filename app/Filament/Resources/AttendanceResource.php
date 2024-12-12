@@ -188,6 +188,11 @@ class AttendanceResource extends Resource
                     }),
             ])
             ->defaultSort('check_in', 'desc')
+            ->modifyQueryUsing(function (Builder $query) {
+                if (!auth()->user()->hasRole(['super_admin', 'admin'])) {
+                    $query->where('user_id', auth()->id());
+                }
+            })
             ->filters([
                 //
             ])
