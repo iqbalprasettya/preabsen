@@ -38,8 +38,9 @@ class LeaveRequestController extends Controller
 
         $attachment = null;
         if ($request->hasFile('attachment')) {
-            $fileName = uniqid() . '_' . $request->file('attachment')->getClientOriginalName();
-            $attachment = $request->file('attachment')->storeAs('leave-attachments', $fileName, 'public');
+            $fileName = 'leave-request_' . uniqid();
+            $extension = $request->file('attachment')->getClientOriginalExtension();
+            $attachment = $request->file('attachment')->storeAs('leave-attachments', $fileName . '.' . $extension, 'public');
         }
 
         $leaveRequest = $request->user()->leaveRequests()->create([
