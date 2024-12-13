@@ -11,7 +11,7 @@
  Target Server Version : 100432 (10.4.32-MariaDB)
  File Encoding         : 65001
 
- Date: 12/12/2024 11:21:57
+ Date: 13/12/2024 10:07:26
 */
 
 SET NAMES utf8mb4;
@@ -34,7 +34,7 @@ CREATE TABLE `attendances`  (
   `check_out_photo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   `check_in_address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
   `check_out_address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
-  `status` enum('present','late','permission','sick','absent') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `status` enum('present','late','absent') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -42,14 +42,11 @@ CREATE TABLE `attendances`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `attendances_user_id_foreign`(`user_id` ASC) USING BTREE,
   CONSTRAINT `attendances_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of attendances
 -- ----------------------------
-INSERT INTO `attendances` VALUES (1, 2, '2024-12-12 07:53:41', '2024-12-12 17:03:34', -6.16564363, 106.82374835, -6.16564363, 106.82374835, 'attendance-photos/01JEWG6TGCA9VNM571VYYN3CM4.jpg', 'attendance-photos/01JEWGAQYJ84W1A13A1XHBWZCT.jpeg', NULL, NULL, 'present', NULL, '2024-12-12 03:57:09', '2024-12-12 03:59:17', NULL);
-INSERT INTO `attendances` VALUES (2, 2, '2024-12-12 07:14:46', NULL, -6.16564363, 106.82374835, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-12 04:15:18', '2024-12-12 04:15:18', NULL);
-INSERT INTO `attendances` VALUES (3, 3, '2024-12-12 07:20:35', NULL, -6.16564363, 106.82374835, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-12 04:21:02', '2024-12-12 04:21:02', NULL);
 
 -- ----------------------------
 -- Table structure for departements
@@ -117,11 +114,12 @@ CREATE TABLE `leave_requests`  (
   INDEX `leave_requests_approved_by_foreign`(`approved_by` ASC) USING BTREE,
   CONSTRAINT `leave_requests_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
   CONSTRAINT `leave_requests_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of leave_requests
 -- ----------------------------
+INSERT INTO `leave_requests` VALUES (1, 3, 'annual', '2024-12-20', '2024-12-22', 'Cuti tahunan', 'leave-attachments/leave-request_675ab2727d847.png', 'approved', 1, '2024-12-12 09:53:38', '2024-12-12 09:52:50', '2024-12-12 09:53:38', NULL);
 
 -- ----------------------------
 -- Table structure for migrations
@@ -206,6 +204,8 @@ CREATE TABLE `notifications`  (
 -- ----------------------------
 -- Records of notifications
 -- ----------------------------
+INSERT INTO `notifications` VALUES ('b8339fd5-7944-4b3d-91c0-803f40627788', 'Filament\\Notifications\\DatabaseNotification', 'App\\Models\\User', 3, '{\"actions\":[{\"name\":\"view\",\"color\":null,\"event\":null,\"eventData\":[],\"dispatchDirection\":false,\"dispatchToComponent\":null,\"extraAttributes\":[],\"icon\":null,\"iconPosition\":\"before\",\"iconSize\":null,\"isOutlined\":false,\"isDisabled\":false,\"label\":\"Lihat Detail\",\"shouldClose\":false,\"shouldMarkAsRead\":false,\"shouldMarkAsUnread\":false,\"shouldOpenUrlInNewTab\":false,\"size\":\"sm\",\"tooltip\":null,\"url\":\"\\/admin\\/leave-requests\",\"view\":\"filament-actions::link-action\"}],\"body\":\"Selamat! Pengajuan cuti telah disetujui.\",\"color\":null,\"duration\":\"persistent\",\"icon\":\"heroicon-o-check-circle\",\"iconColor\":null,\"status\":null,\"title\":\"Pengajuan Cuti Disetujui\",\"view\":\"filament-notifications::notification\",\"viewData\":[],\"format\":\"filament\"}', NULL, '2024-12-12 09:53:39', '2024-12-12 09:53:39');
+INSERT INTO `notifications` VALUES ('f1431894-1b95-4101-9a3d-90cd90a2f68d', 'Filament\\Notifications\\DatabaseNotification', 'App\\Models\\User', 2, '{\"actions\":[{\"name\":\"view\",\"color\":null,\"event\":null,\"eventData\":[],\"dispatchDirection\":false,\"dispatchToComponent\":null,\"extraAttributes\":[],\"icon\":null,\"iconPosition\":\"before\",\"iconSize\":null,\"isOutlined\":false,\"isDisabled\":false,\"label\":\"Lihat Detail\",\"shouldClose\":false,\"shouldMarkAsRead\":false,\"shouldMarkAsUnread\":false,\"shouldOpenUrlInNewTab\":false,\"size\":\"sm\",\"tooltip\":null,\"url\":\"\\/admin\\/leave-requests\",\"view\":\"filament-actions::link-action\"}],\"body\":\"Selamat! Pengajuan cuti telah disetujui.\",\"color\":null,\"duration\":\"persistent\",\"icon\":\"heroicon-o-check-circle\",\"iconColor\":null,\"status\":null,\"title\":\"Pengajuan Cuti Disetujui\",\"view\":\"filament-notifications::notification\",\"viewData\":[],\"format\":\"filament\"}', NULL, '2024-12-12 07:33:01', '2024-12-12 07:33:01');
 
 -- ----------------------------
 -- Table structure for office_locations
@@ -370,11 +370,13 @@ CREATE TABLE `personal_access_tokens`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `personal_access_tokens_token_unique`(`token` ASC) USING BTREE,
   INDEX `personal_access_tokens_tokenable_type_tokenable_id_index`(`tokenable_type` ASC, `tokenable_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of personal_access_tokens
 -- ----------------------------
+INSERT INTO `personal_access_tokens` VALUES (1, 'App\\Models\\User', 2, 'auth_token', 'bb059f4a4c83c1aab96b9cfdab895a492194dbf4f5268469d4ee9d088ade261e', '[\"*\"]', '2024-12-12 07:35:41', NULL, '2024-12-12 07:06:20', '2024-12-12 07:35:41');
+INSERT INTO `personal_access_tokens` VALUES (2, 'App\\Models\\User', 3, 'auth_token', 'b47e368e59c8b2de8acdb20631d1b17f8abf404aec54e8a3b5351ece737135d8', '[\"*\"]', '2024-12-13 02:38:28', NULL, '2024-12-12 07:37:13', '2024-12-13 02:38:28');
 
 -- ----------------------------
 -- Table structure for role_has_permissions

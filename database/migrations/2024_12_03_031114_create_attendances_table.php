@@ -17,14 +17,14 @@ return new class extends Migration
             $table->timestamp('check_in')->nullable();
             $table->timestamp('check_out')->nullable();
             $table->double('check_in_latitude')->nullable();
-            $table->double('check_in_longitude')->nullable(); 
+            $table->double('check_in_longitude')->nullable();
             $table->double('check_out_latitude')->nullable();
             $table->double('check_out_longitude')->nullable();
             $table->string('check_in_photo')->nullable();
             $table->string('check_out_photo')->nullable();
             $table->text('check_in_address')->nullable();
             $table->text('check_out_address')->nullable();
-            $table->enum('status', ['present', 'late', 'permission', 'sick', 'absent'])->nullable();
+            $table->enum('status', ['present', 'late', 'absent'])->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();

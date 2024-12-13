@@ -132,9 +132,8 @@ class AttendanceResource extends Resource
             Forms\Components\Select::make('status')
                 ->options([
                     'present' => 'Hadir',
-                    'late' => 'Terlambat', 
-                    'permission' => 'Izin',
-                    'sick' => 'Sakit',
+                    'late' => 'Terlambat',
+                    'early' => 'Pulang Lebih Awal',
                     'absent' => 'Tidak Hadir',
                 ]),
             Forms\Components\Textarea::make('notes')
@@ -168,22 +167,19 @@ class AttendanceResource extends Resource
                     ->icon(fn (string $state): string => match ($state) {
                         'present' => 'heroicon-m-check-circle',
                         'late' => 'heroicon-m-clock',
-                        'permission' => 'heroicon-m-document-text',
-                        'sick' => 'heroicon-m-heart',
+                        'early' => 'heroicon-m-arrow-left',
                         'absent' => 'heroicon-m-x-circle',
                     })
                     ->color(fn (string $state): string => match ($state) {
                         'present' => 'success',
                         'late' => 'warning',
-                        'permission' => 'info',
-                        'sick' => 'danger',
+                        'early' => 'info',
                         'absent' => 'danger',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'present' => 'Hadir',
                         'late' => 'Terlambat',
-                        'permission' => 'Izin',
-                        'sick' => 'Sakit',
+                        'early' => 'Pulang Lebih Awal',
                         'absent' => 'Tidak Hadir',
                     }),
             ])
