@@ -96,7 +96,7 @@ class UserResource extends Resource
                                 Forms\Components\FileUpload::make('photo')
                                     ->image()
                                     ->imageEditor()
-                                    ->directory('user-photos')
+                                    ->directory('profile-photos')
                                     ->visibility('public')
                                     ->maxSize(2048)
                                     ->columnSpanFull(),
@@ -127,7 +127,7 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('photo')
                     ->circular()
-                    ->defaultImageUrl(url('/storage/user-photos/default.png'))
+                    ->defaultImageUrl(url('/storage/profile-photos/default.png'))
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')

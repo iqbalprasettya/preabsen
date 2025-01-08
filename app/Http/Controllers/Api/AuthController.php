@@ -18,20 +18,22 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($request->only('email', 'password'))) {
-            throw ValidationException::withMessages([
-                'email' => ['Kredensial yang diberikan tidak sesuai.'],
-            ]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Kredensial yang diberikan tidak sesuai.'
+            ], 401);
         }
 
         $user = User::where('email', $request->email)->first();
         
         // Hapus token lama
-        $user->tokens()->delete();
+        // $user->tokens()->delete();
         
         // Buat token baru
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
+            'status' => true,
             'message' => 'Login berhasil',
             'access_token' => $token,
             'token_type' => 'Bearer',
@@ -41,9 +43,13 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        // Mengatur token saat ini menjadi expired
+        $request->user()->tokens()->update([
+            'expires_at' => now()
+        ]);
         
         return response()->json([
+            'status' => true,
             'message' => 'Logout berhasil'
         ]);
     }
@@ -51,6 +57,7 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         return response()->json([
+            'status' => true,
             'user' => $request->user()->load('departement', 'officeLocation', 'workSchedule')
         ]);
     }

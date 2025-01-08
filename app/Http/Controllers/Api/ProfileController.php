@@ -25,8 +25,8 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'name' => 'nullable|string|max:255',
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
             'phone_number' => 'nullable|string|max:255',
             'address' => 'nullable|string',
@@ -34,21 +34,24 @@ class ProfileController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            // Hapus foto lama jika ada
-            if ($user->photo) {
-                Storage::disk('public')->delete($user->photo);
-            }
-            
             $fileName = 'profile_' . uniqid();
             $extension = $request->file('photo')->getClientOriginalExtension();
             $photo = $request->file('photo')->storeAs('profile-photos', $fileName . '.' . $extension, 'public');
             $user->photo = $photo;
         }
 
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->phone_number = $request->phone_number;
-        $user->address = $request->address;
+        if ($request->has('name')) {
+            $user->name = $request->name;
+        }
+        if ($request->has('email')) {
+            $user->email = $request->email;
+        }
+        if ($request->has('phone_number')) {
+            $user->phone_number = $request->phone_number;
+        }
+        if ($request->has('address')) {
+            $user->address = $request->address;
+        }
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);

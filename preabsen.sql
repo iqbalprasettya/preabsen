@@ -11,7 +11,7 @@
  Target Server Version : 100432 (10.4.32-MariaDB)
  File Encoding         : 65001
 
- Date: 13/12/2024 10:07:26
+ Date: 27/12/2024 13:50:24
 */
 
 SET NAMES utf8mb4;
@@ -34,7 +34,7 @@ CREATE TABLE `attendances`  (
   `check_out_photo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   `check_in_address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
   `check_out_address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
-  `status` enum('present','late','absent') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `status` enum('present','late','absent','early') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -42,11 +42,12 @@ CREATE TABLE `attendances`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `attendances_user_id_foreign`(`user_id` ASC) USING BTREE,
   CONSTRAINT `attendances_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of attendances
 -- ----------------------------
+INSERT INTO `attendances` VALUES (1, 3, '2024-12-13 07:15:01', '2024-12-13 04:15:15', -6.1234, 106.8765, -6.1234, 106.8765, 'attendance-photos/attendance_675bac545a205.png', 'attendance-photos/attendance_675bb4d33d53c.png', NULL, NULL, 'early', NULL, '2024-12-13 03:39:01', '2024-12-13 04:15:15', NULL);
 
 -- ----------------------------
 -- Table structure for departements
@@ -204,7 +205,7 @@ CREATE TABLE `notifications`  (
 -- ----------------------------
 -- Records of notifications
 -- ----------------------------
-INSERT INTO `notifications` VALUES ('b8339fd5-7944-4b3d-91c0-803f40627788', 'Filament\\Notifications\\DatabaseNotification', 'App\\Models\\User', 3, '{\"actions\":[{\"name\":\"view\",\"color\":null,\"event\":null,\"eventData\":[],\"dispatchDirection\":false,\"dispatchToComponent\":null,\"extraAttributes\":[],\"icon\":null,\"iconPosition\":\"before\",\"iconSize\":null,\"isOutlined\":false,\"isDisabled\":false,\"label\":\"Lihat Detail\",\"shouldClose\":false,\"shouldMarkAsRead\":false,\"shouldMarkAsUnread\":false,\"shouldOpenUrlInNewTab\":false,\"size\":\"sm\",\"tooltip\":null,\"url\":\"\\/admin\\/leave-requests\",\"view\":\"filament-actions::link-action\"}],\"body\":\"Selamat! Pengajuan cuti telah disetujui.\",\"color\":null,\"duration\":\"persistent\",\"icon\":\"heroicon-o-check-circle\",\"iconColor\":null,\"status\":null,\"title\":\"Pengajuan Cuti Disetujui\",\"view\":\"filament-notifications::notification\",\"viewData\":[],\"format\":\"filament\"}', NULL, '2024-12-12 09:53:39', '2024-12-12 09:53:39');
+INSERT INTO `notifications` VALUES ('b8339fd5-7944-4b3d-91c0-803f40627788', 'Filament\\Notifications\\DatabaseNotification', 'App\\Models\\User', 3, '{\"actions\":[{\"name\":\"view\",\"color\":null,\"event\":null,\"eventData\":[],\"dispatchDirection\":false,\"dispatchToComponent\":null,\"extraAttributes\":[],\"icon\":null,\"iconPosition\":\"before\",\"iconSize\":null,\"isOutlined\":false,\"isDisabled\":false,\"label\":\"Lihat Detail\",\"shouldClose\":false,\"shouldMarkAsRead\":false,\"shouldMarkAsUnread\":false,\"shouldOpenUrlInNewTab\":false,\"size\":\"sm\",\"tooltip\":null,\"url\":\"\\/admin\\/leave-requests\",\"view\":\"filament-actions::link-action\"}],\"body\":\"Selamat! Pengajuan cuti telah disetujui.\",\"color\":null,\"duration\":\"persistent\",\"icon\":\"heroicon-o-check-circle\",\"iconColor\":null,\"status\":null,\"title\":\"Pengajuan Cuti Disetujui\",\"view\":\"filament-notifications::notification\",\"viewData\":[],\"format\":\"filament\"}', '2024-12-13 04:32:39', '2024-12-12 09:53:39', '2024-12-13 04:32:39');
 INSERT INTO `notifications` VALUES ('f1431894-1b95-4101-9a3d-90cd90a2f68d', 'Filament\\Notifications\\DatabaseNotification', 'App\\Models\\User', 2, '{\"actions\":[{\"name\":\"view\",\"color\":null,\"event\":null,\"eventData\":[],\"dispatchDirection\":false,\"dispatchToComponent\":null,\"extraAttributes\":[],\"icon\":null,\"iconPosition\":\"before\",\"iconSize\":null,\"isOutlined\":false,\"isDisabled\":false,\"label\":\"Lihat Detail\",\"shouldClose\":false,\"shouldMarkAsRead\":false,\"shouldMarkAsUnread\":false,\"shouldOpenUrlInNewTab\":false,\"size\":\"sm\",\"tooltip\":null,\"url\":\"\\/admin\\/leave-requests\",\"view\":\"filament-actions::link-action\"}],\"body\":\"Selamat! Pengajuan cuti telah disetujui.\",\"color\":null,\"duration\":\"persistent\",\"icon\":\"heroicon-o-check-circle\",\"iconColor\":null,\"status\":null,\"title\":\"Pengajuan Cuti Disetujui\",\"view\":\"filament-notifications::notification\",\"viewData\":[],\"format\":\"filament\"}', NULL, '2024-12-12 07:33:01', '2024-12-12 07:33:01');
 
 -- ----------------------------
@@ -375,8 +376,7 @@ CREATE TABLE `personal_access_tokens`  (
 -- ----------------------------
 -- Records of personal_access_tokens
 -- ----------------------------
-INSERT INTO `personal_access_tokens` VALUES (1, 'App\\Models\\User', 2, 'auth_token', 'bb059f4a4c83c1aab96b9cfdab895a492194dbf4f5268469d4ee9d088ade261e', '[\"*\"]', '2024-12-12 07:35:41', NULL, '2024-12-12 07:06:20', '2024-12-12 07:35:41');
-INSERT INTO `personal_access_tokens` VALUES (2, 'App\\Models\\User', 3, 'auth_token', 'b47e368e59c8b2de8acdb20631d1b17f8abf404aec54e8a3b5351ece737135d8', '[\"*\"]', '2024-12-13 02:38:28', NULL, '2024-12-12 07:37:13', '2024-12-13 02:38:28');
+INSERT INTO `personal_access_tokens` VALUES (2, 'App\\Models\\User', 3, 'auth_token', '820f7c2fee97c940989d70dc0c2757e8fff27155ae316523656cf43c9d48f83f', '[\"*\"]', NULL, NULL, '2024-12-13 09:58:01', '2024-12-13 09:58:01');
 
 -- ----------------------------
 -- Table structure for role_has_permissions
@@ -594,7 +594,7 @@ CREATE TABLE `users`  (
 -- ----------------------------
 INSERT INTO `users` VALUES (1, 'Super Admin', 'superadmin@gmail.com', NULL, '$2y$12$Pb.6x94ZkqJnemhi4wV04eDPN5DiJad23ipGz7ubrmXF9rIPyqNDS', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-12 02:36:23', '2024-12-12 02:36:23', NULL);
 INSERT INTO `users` VALUES (2, 'Pegawai 1', 'pegawai1@gmail.com', NULL, '$2y$12$knlEJc.y/8MkBjrvzdKM6uSkiweMXN/nclcpY917VTKcnZtu3r2v.', 2, 1, 1, '089608780861', 'Bogor\nJawa barat', 'Programmer', '144856 344 5563', NULL, NULL, '2024-12-12 03:32:22', '2024-12-12 03:32:22', NULL);
-INSERT INTO `users` VALUES (3, 'Pegawai 2', 'pegawai2@gmail.com', NULL, '$2y$12$UgO9KaEo47j2y4w9Hz2LWelmdFBbfVt0zFiM.M6wXwUTgJrBAfAlS', 1, 1, 1, '089608789861', 'Bogor\nJawa barat', 'Finance', '144856 344 5723', NULL, NULL, '2024-12-12 04:14:13', '2024-12-12 04:14:13', NULL);
+INSERT INTO `users` VALUES (3, 'Pegawai 2', 'pegawai2@gmail.com', NULL, '$2y$12$UgO9KaEo47j2y4w9Hz2LWelmdFBbfVt0zFiM.M6wXwUTgJrBAfAlS', 1, 1, 1, '089608789861', 'Bogor\nJawa barat', 'Finance', '144856 344 5723', 'profile-photos/profile_675bb9e95c15b.jpg', NULL, '2024-12-12 04:14:13', '2024-12-13 04:36:57', NULL);
 
 -- ----------------------------
 -- Table structure for work_schedules
