@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\HolidayController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,25 +27,28 @@ Route::prefix('v1')->group(function () {
     // Auth Routes
     Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
-    
+
     // Protected Routes
     Route::middleware('auth:sanctum')->group(function () {
         // Auth
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('user', [AuthController::class, 'user']);
-        
+
         // Profile
         Route::get('profile', [ProfileController::class, 'show']);
         Route::post('profile', [ProfileController::class, 'update']);
-        
+
         // Attendance
         Route::get('attendances', [AttendanceController::class, 'index']);
         Route::post('attendances/check-in', [AttendanceController::class, 'checkIn']);
         Route::post('attendances/check-out', [AttendanceController::class, 'checkOut']);
-        
+
         // Leave Request
         Route::get('leave-requests', [LeaveRequestController::class, 'index']);
         Route::post('leave-requests', [LeaveRequestController::class, 'store']);
         Route::get('leave-requests/{id}', [LeaveRequestController::class, 'show']);
+
+        // Holiday
+        Route::get('holidays', [HolidayController::class, 'index']);
     });
 });

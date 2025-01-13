@@ -21,7 +21,7 @@ class OfficeLocationResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
     protected static ?string $navigationGroup = 'Pengaturan';
     protected static ?string $navigationLabel = 'Lokasi Kantor';
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {
