@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\HolidayController;
+use App\Http\Controllers\Api\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,5 +51,11 @@ Route::prefix('v1')->group(function () {
 
         // Holiday
         Route::get('holidays', [HolidayController::class, 'index']);
+
+        // Notifications
+        Route::get('notifications', [NotificationController::class, 'index']);
+        Route::post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+        Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
     });
 });
