@@ -16,3 +16,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/check-timezone', function () {
+    dd([
+        'PHP Default Timezone' => date_default_timezone_get(),
+        'Laravel Config Timezone' => config('app.timezone'),
+        'Current Time' => now()->format('Y-m-d H:i:s'),
+    ]);
+});
