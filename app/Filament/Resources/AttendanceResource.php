@@ -36,7 +36,7 @@ class AttendanceResource extends Resource
                             ->schema(static::getTimeLocationFormSchema())
                             ->columns(2),
 
-                        Forms\Components\Section::make('Foto Kehadiran') 
+                        Forms\Components\Section::make('Foto Kehadiran')
                             ->schema(static::getPhotoFormSchema())
                             ->columns(2),
                     ])
@@ -46,7 +46,7 @@ class AttendanceResource extends Resource
                     ->schema([
                         Forms\Components\Section::make('Status dan Catatan')
                             ->schema(static::getStatusFormSchema()),
-                            
+
                         Forms\Components\Section::make('Informasi Tambahan')
                             ->schema([
                                 Forms\Components\Placeholder::make('created_at')
@@ -63,7 +63,7 @@ class AttendanceResource extends Resource
             ->columns(3);
     }
 
-    public static function getEmployeeFormSchema(): array 
+    public static function getEmployeeFormSchema(): array
     {
         return [
             Forms\Components\Select::make('user_id')
@@ -132,9 +132,10 @@ class AttendanceResource extends Resource
             Forms\Components\Select::make('status')
                 ->options([
                     'present' => 'Hadir',
-                    'late' => 'Terlambat',
-                    'early' => 'Pulang Lebih Awal',
+                    'half_day' => 'Setengah Hari',
+                    'overtime' => 'Lembur',
                     'absent' => 'Tidak Hadir',
+                    'late' => 'Terlambat',
                 ]),
             Forms\Components\Textarea::make('notes')
                 ->label('Catatan')
@@ -164,22 +165,25 @@ class AttendanceResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->icon(fn (string $state): string => match ($state) {
+                    ->icon(fn(string $state): string => match ($state) {
                         'present' => 'heroicon-m-check-circle',
                         'late' => 'heroicon-m-clock',
-                        'early' => 'heroicon-m-arrow-left',
+                        'half_day' => 'heroicon-m-arrow-left',
+                        'overtime' => 'heroicon-m-clock',
                         'absent' => 'heroicon-m-x-circle',
                     })
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'present' => 'success',
                         'late' => 'warning',
-                        'early' => 'info',
+                        'half_day' => 'info',
+                        'overtime' => 'warning',
                         'absent' => 'danger',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'present' => 'Hadir',
                         'late' => 'Terlambat',
-                        'early' => 'Pulang Lebih Awal',
+                        'half_day' => 'Setengah Hari',
+                        'overtime' => 'Lembur',
                         'absent' => 'Tidak Hadir',
                     }),
             ])

@@ -16,11 +16,11 @@ class AttendanceController extends Controller
             ->attendances()
             ->latest()
             ->paginate(10);
-            
+
         $attendances->getCollection()->transform(function ($attendance) {
-            $attendance->check_in_photo_url = $attendance->check_in_photo ? 
+            $attendance->check_in_photo_url = $attendance->check_in_photo ?
                 url('storage/' . $attendance->check_in_photo) : null;
-            $attendance->check_out_photo_url = $attendance->check_out_photo ? 
+            $attendance->check_out_photo_url = $attendance->check_out_photo ?
                 url('storage/' . $attendance->check_out_photo) : null;
             return $attendance;
         });
@@ -34,11 +34,11 @@ class AttendanceController extends Controller
             ->attendances()
             ->whereDate('created_at', Carbon::today())
             ->first();
-            
+
         if ($attendance) {
-            $attendance->check_in_photo_url = $attendance->check_in_photo ? 
+            $attendance->check_in_photo_url = $attendance->check_in_photo ?
                 url('storage/' . $attendance->check_in_photo) : null;
-            $attendance->check_out_photo_url = $attendance->check_out_photo ? 
+            $attendance->check_out_photo_url = $attendance->check_out_photo ?
                 url('storage/' . $attendance->check_out_photo) : null;
         }
 
@@ -55,6 +55,23 @@ class AttendanceController extends Controller
             'photo' => 'required|image|max:2048'
         ]);
 
+        // Cek jadwal kerja user
+        $workSchedule = $request->user()->workSchedule;
+        if (!$workSchedule) {
+            return response()->json([
+                'message' => 'Jadwal kerja belum diatur'
+            ], 400);
+        }
+
+        // Tentukan status check in
+        $now = now();
+        $checkInStart = Carbon::today()->setTimeFromTimeString($workSchedule->check_in_start);
+
+        $status = 'present';
+        if ($now->isAfter($checkInStart)) {
+            $status = 'late';
+        }
+
         // Simpan foto
         $photo = null;
         if ($request->hasFile('photo')) {
@@ -64,10 +81,11 @@ class AttendanceController extends Controller
         }
 
         $attendance = $request->user()->attendances()->create([
-            'check_in' => now(),
+            'check_in' => $now,
             'check_in_latitude' => $request->latitude,
             'check_in_longitude' => $request->longitude,
             'check_in_photo' => $photo,
+            'status' => $status
         ]);
 
         $attendance->check_in_photo_url = $photo ? url('storage/' . $photo) : null;
@@ -82,7 +100,7 @@ class AttendanceController extends Controller
     {
         $request->validate([
             'latitude' => 'required',
-            'longitude' => 'required', 
+            'longitude' => 'required',
             'photo' => 'required|image|max:2048'
         ]);
 
@@ -97,40 +115,23 @@ class AttendanceController extends Controller
             ], 400);
         }
 
-        // Ambil jadwal kerja user
         $workSchedule = $request->user()->workSchedule;
-
         if (!$workSchedule) {
             return response()->json([
                 'message' => 'Jadwal kerja belum diatur'
             ], 400);
         }
-        
-        // Tentukan status berdasarkan waktu check in dan check out
-        $checkInTime = Carbon::parse($attendance->check_in);
-        $checkOutTime = now();
-        
+
         try {
-            // Konversi jadwal ke timestamp hari ini
-            $checkInStart = Carbon::today()->setTimeFromTimeString($workSchedule->check_in_start);
-            $checkInEnd = Carbon::today()->setTimeFromTimeString($workSchedule->check_in_end);
+            $now = now();
             $checkOutStart = Carbon::today()->setTimeFromTimeString($workSchedule->check_out_start);
-            $checkOutEnd = Carbon::today()->setTimeFromTimeString($workSchedule->check_out_end);
-            
-            // Tentukan status
-            $status = 'absent'; // Default status
-            
-            // Cek status berdasarkan check in dan check out
-            if ($checkInTime->between($checkInStart, $checkInEnd)) {
-                if ($checkOutTime->between($checkOutStart, $checkOutEnd)) {
-                    $status = 'present'; // Tepat waktu
-                } else if ($checkOutTime->isBefore($checkOutStart)) {
-                    $status = 'early'; // Pulang lebih awal
-                }
-            } else {
-                if ($checkInTime->isAfter($checkInEnd)) {
-                    $status = 'late'; // Masuk terlambat
-                }
+
+            // Update status berdasarkan waktu check out
+            $status = $attendance->status; // Pertahankan status check in
+            if ($now->isBefore($checkOutStart)) {
+                $status = 'half_day';
+            } else if ($now->isAfter($checkOutStart)) {
+                $status = 'overtime';
             }
 
             // Simpan foto
@@ -142,23 +143,22 @@ class AttendanceController extends Controller
             }
 
             $attendance->update([
-                'check_out' => $checkOutTime,
+                'check_out' => $now,
                 'check_out_latitude' => $request->latitude,
                 'check_out_longitude' => $request->longitude,
                 'check_out_photo' => $photo,
                 'status' => $status
             ]);
 
-            $attendance->check_in_photo_url = $attendance->check_in_photo ? 
+            $attendance->check_in_photo_url = $attendance->check_in_photo ?
                 url('storage/' . $attendance->check_in_photo) : null;
-            $attendance->check_out_photo_url = $photo ? 
+            $attendance->check_out_photo_url = $photo ?
                 url('storage/' . $photo) : null;
 
             return response()->json([
                 'message' => 'Check out berhasil',
                 'attendance' => $attendance
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Terjadi kesalahan saat memproses check out',
