@@ -49,6 +49,18 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
+        // Cek apakah sudah ada absensi hari ini
+        $existingAttendance = $request->user()
+            ->attendances()
+            ->whereDate('created_at', Carbon::today())
+            ->first();
+
+        if ($existingAttendance) {
+            return response()->json([
+                'message' => 'Anda sudah melakukan check in hari ini'
+            ], 400);
+        }
+
         $request->validate([
             'latitude' => 'required',
             'longitude' => 'required',
@@ -70,6 +82,8 @@ class AttendanceController extends Controller
         $status = 'present';
         if ($now->isAfter($checkInStart)) {
             $status = 'late';
+        } else if ($now->isBefore($checkInStart)) {
+            $status = 'early';
         }
 
         // Simpan foto
@@ -98,12 +112,6 @@ class AttendanceController extends Controller
 
     public function checkOut(Request $request)
     {
-        $request->validate([
-            'latitude' => 'required',
-            'longitude' => 'required',
-            'photo' => 'required|image|max:2048'
-        ]);
-
         $attendance = $request->user()
             ->attendances()
             ->whereDate('created_at', Carbon::today())
@@ -115,6 +123,19 @@ class AttendanceController extends Controller
             ], 400);
         }
 
+        // Cek apakah sudah check out
+        if ($attendance->check_out) {
+            return response()->json([
+                'message' => 'Anda sudah melakukan check out hari ini'
+            ], 400);
+        }
+
+        $request->validate([
+            'latitude' => 'required',
+            'longitude' => 'required',
+            'photo' => 'required|image|max:2048'
+        ]);
+
         $workSchedule = $request->user()->workSchedule;
         if (!$workSchedule) {
             return response()->json([
@@ -125,12 +146,16 @@ class AttendanceController extends Controller
         try {
             $now = now();
             $checkOutStart = Carbon::today()->setTimeFromTimeString($workSchedule->check_out_start);
+            $checkOutEnd = Carbon::today()->setTimeFromTimeString($workSchedule->check_out_end);
 
             // Update status berdasarkan waktu check out
             $status = $attendance->status; // Pertahankan status check in
-            if ($now->isBefore($checkOutStart)) {
+
+            if ($now->isBetween($checkOutStart, $checkOutEnd)) {
+                $status = 'present';
+            } else if ($now->isBefore($checkOutStart)) {
                 $status = 'half_day';
-            } else if ($now->isAfter($checkOutStart)) {
+            } else if ($now->isAfter($checkOutEnd)) {
                 $status = 'overtime';
             }
 

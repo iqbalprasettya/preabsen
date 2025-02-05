@@ -136,6 +136,7 @@ class AttendanceResource extends Resource
                     'overtime' => 'Lembur',
                     'absent' => 'Tidak Hadir',
                     'late' => 'Terlambat',
+                    'early' => 'Lebih Awal',
                 ]),
             Forms\Components\Textarea::make('notes')
                 ->label('Catatan')
@@ -171,6 +172,7 @@ class AttendanceResource extends Resource
                         'half_day' => 'heroicon-m-arrow-left',
                         'overtime' => 'heroicon-m-clock',
                         'absent' => 'heroicon-m-x-circle',
+                        'early' => 'heroicon-m-arrow-up',
                     })
                     ->color(fn(string $state): string => match ($state) {
                         'present' => 'success',
@@ -178,6 +180,7 @@ class AttendanceResource extends Resource
                         'half_day' => 'info',
                         'overtime' => 'warning',
                         'absent' => 'danger',
+                        'early' => 'info',
                     })
                     ->formatStateUsing(fn(string $state): string => match ($state) {
                         'present' => 'Hadir',
@@ -185,6 +188,7 @@ class AttendanceResource extends Resource
                         'half_day' => 'Setengah Hari',
                         'overtime' => 'Lembur',
                         'absent' => 'Tidak Hadir',
+                        'early' => 'Lebih Awal',
                     }),
             ])
             ->defaultSort('check_in', 'desc')

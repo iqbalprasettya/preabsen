@@ -41,6 +41,7 @@ Route::prefix('v1')->group(function () {
 
         // Attendance
         Route::get('attendances', [AttendanceController::class, 'index']);
+        Route::get('attendances/today', [AttendanceController::class, 'today']);
         Route::post('attendances/check-in', [AttendanceController::class, 'checkIn']);
         Route::post('attendances/check-out', [AttendanceController::class, 'checkOut']);
 
