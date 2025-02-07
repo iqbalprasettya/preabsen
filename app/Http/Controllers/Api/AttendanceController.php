@@ -30,8 +30,8 @@ class AttendanceController extends Controller
 
     public function today(Request $request)
     {
-        $attendance = $request->user()
-            ->attendances()
+        $user = $request->user()->load('officeLocation');
+        $attendance = $user->attendances()
             ->whereDate('created_at', Carbon::today())
             ->first();
 
@@ -43,7 +43,8 @@ class AttendanceController extends Controller
         }
 
         return response()->json([
-            'attendance' => $attendance
+            'attendance' => $attendance,
+            'office_location' => $user->officeLocation
         ]);
     }
 
