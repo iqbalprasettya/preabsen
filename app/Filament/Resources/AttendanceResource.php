@@ -158,10 +158,18 @@ class AttendanceResource extends Resource
                     ->dateTime('d M Y H:i')
                     ->sortable(),
 
+                Tables\Columns\ImageColumn::make('check_in_photo')
+                    ->label('Foto Masuk')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('check_out')
                     ->label('Waktu Keluar')
                     ->dateTime('d M Y H:i')
                     ->sortable(),
+
+                Tables\Columns\ImageColumn::make('check_out_photo')
+                    ->label('Foto Keluar')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
@@ -198,7 +206,16 @@ class AttendanceResource extends Resource
                 }
             })
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('check_in_photo')
+                    ->label('Foto Masuk')
+                    ->placeholder('Semua')
+                    ->trueLabel('Ada')
+                    ->falseLabel('Tidak Ada'),
+                Tables\Filters\TernaryFilter::make('check_out_photo')
+                    ->label('Foto Keluar')
+                    ->placeholder('Semua')
+                    ->trueLabel('Ada')
+                    ->falseLabel('Tidak Ada'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
