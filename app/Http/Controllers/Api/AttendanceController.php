@@ -12,11 +12,36 @@ class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
-        $attendances = $request->user()
-            ->attendances()
-            ->latest()
-            ->paginate(10);
+        // Validasi parameter bulan dan tahun
+        $request->validate([
+            'month' => 'nullable|numeric|between:1,12',
+            'year' => 'nullable|numeric|min:2000',
+            'per_page' => 'nullable|numeric|min:1|max:100' // Tambahan validasi untuk per_page
+        ]);
 
+        $query = $request->user()->attendances();
+
+        // Filter berdasarkan bulan dan tahun jika parameter tersedia
+        if ($request->month && $request->year) {
+            $query->whereYear('check_in', $request->year)
+                ->whereMonth('check_in', $request->month);
+        }
+        // Jika hanya tahun yang tersedia
+        else if ($request->year) {
+            $query->whereYear('check_in', $request->year);
+        }
+        // Default: tampilkan bulan ini
+        else {
+            $query->whereYear('check_in', now()->year)
+                ->whereMonth('check_in', now()->month);
+        }
+
+        // Jumlah item per halaman (default 10)
+        $perPage = $request->per_page ?? 10;
+
+        $attendances = $query->latest()->paginate($perPage)->withQueryString();
+
+        // Transform collection
         $attendances->getCollection()->transform(function ($attendance) {
             $attendance->check_in_photo_url = $attendance->check_in_photo ?
                 url('storage/' . $attendance->check_in_photo) : null;
@@ -25,7 +50,28 @@ class AttendanceController extends Controller
             return $attendance;
         });
 
-        return response()->json($attendances);
+        // Tambahkan informasi filter ke metadata
+        $metadata = [
+            'filter' => [
+                'month' => $request->month ?? now()->month,
+                'year' => $request->year ?? now()->year,
+            ],
+            'total_records' => $attendances->total(),
+            'records_per_page' => $perPage,
+            'current_page' => $attendances->currentPage(),
+            'total_pages' => $attendances->lastPage(),
+        ];
+
+        return response()->json([
+            'data' => $attendances->items(),
+            'meta' => $metadata,
+            'links' => [
+                'first' => $attendances->url(1),
+                'last' => $attendances->url($attendances->lastPage()),
+                'prev' => $attendances->previousPageUrl(),
+                'next' => $attendances->nextPageUrl(),
+            ]
+        ]);
     }
 
     public function today(Request $request)
