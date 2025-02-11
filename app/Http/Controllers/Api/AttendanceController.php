@@ -238,4 +238,38 @@ class AttendanceController extends Controller
             ], 500);
         }
     }
+
+    public function summary(Request $request)
+    {
+        // Validasi parameter bulan dan tahun
+        $request->validate([
+            'month' => 'required|numeric|between:1,12',
+            'year' => 'required|numeric|min:2000'
+        ]);
+
+        // Dapatkan jumlah hari kerja dalam bulan tersebut
+        $totalDays = Carbon::create($request->year, $request->month)->daysInMonth;
+
+        // Query untuk mendapatkan data kehadiran
+        $attendances = $request->user()
+            ->attendances()
+            ->whereYear('check_in', $request->year)
+            ->whereMonth('check_in', $request->month)
+            ->get();
+
+        // Hitung jumlah masing-masing status
+        $summary = [
+            'present' => $attendances->whereIn('status', ['present', 'early'])->count(),
+            'late' => $attendances->where('status', 'late')->count(),
+            'half_day' => $attendances->where('status', 'half_day')->count(),
+            'overtime' => $attendances->where('status', 'overtime')->count(),
+            'total_days' => $totalDays,
+            'total_present' => $attendances->count(),
+            'absent' => $attendances->where('status', 'absent')->count()
+        ];
+
+        return response()->json([
+            'data' => $summary
+        ]);
+    }
 }

@@ -44,6 +44,7 @@ Route::prefix('v1')->group(function () {
         Route::get('attendances/today', [AttendanceController::class, 'today']);
         Route::post('attendances/check-in', [AttendanceController::class, 'checkIn']);
         Route::post('attendances/check-out', [AttendanceController::class, 'checkOut']);
+        Route::get('attendances/summary', [AttendanceController::class, 'summary']);
 
         // Leave Request
         Route::get('leave-requests', [LeaveRequestController::class, 'index']);
