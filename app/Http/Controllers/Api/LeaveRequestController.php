@@ -11,11 +11,55 @@ class LeaveRequestController extends Controller
 {
     public function index(Request $request)
     {
+        // Validasi parameter
+        $request->validate([
+            'month' => 'nullable|numeric|between:1,12',
+            'year' => 'nullable|numeric|min:2000',
+            'type' => 'nullable|in:annual,sick,important,other',
+            'status' => 'nullable|in:pending,approved,rejected',
+            'per_page' => 'nullable|numeric|min:1|max:100'
+        ]);
+
         // Ambil kuota cuti tahunan
         $currentYear = now()->year;
         $leaveQuota = $request->user()->leaveQuotas()
             ->where('year', $currentYear)
             ->first();
+
+        // Query dasar
+        $query = $request->user()->leaveRequests();
+
+        // Filter berdasarkan bulan dan tahun
+        if ($request->month && $request->year) {
+            $query->whereYear('start_date', $request->year)
+                ->whereMonth('start_date', $request->month);
+        } elseif ($request->year) {
+            $query->whereYear('start_date', $request->year);
+        }
+
+        // Filter berdasarkan tipe cuti
+        if ($request->type) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter berdasarkan status
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        // Jumlah item per halaman
+        $perPage = $request->per_page ?? 10;
+
+        // Ambil data dengan pagination
+        $leaveRequests = $query->latest()->paginate($perPage)->withQueryString();
+
+        // Transform collection untuk URL attachment
+        $leaveRequests->getCollection()->transform(function ($item) {
+            $item->attachment_url = $item->attachment
+                ? url('storage/' . $item->attachment)
+                : null;
+            return $item;
+        });
 
         // Hitung statistik cuti
         $leaveStats = [
@@ -36,21 +80,30 @@ class LeaveRequestController extends Controller
             ]
         ];
 
-        $leaveRequests = $request->user()
-            ->leaveRequests()
-            ->latest()
-            ->paginate(10);
-
-        $leaveRequests->getCollection()->transform(function ($item) {
-            $item->attachment_url = $item->attachment
-                ? url('storage/' . $item->attachment)
-                : null;
-            return $item;
-        });
+        // Tambahkan informasi filter ke metadata
+        $metadata = [
+            'filter' => [
+                'month' => $request->month ?? null,
+                'year' => $request->year ?? null,
+                'type' => $request->type ?? null,
+                'status' => $request->status ?? null,
+            ],
+            'total_records' => $leaveRequests->total(),
+            'records_per_page' => $perPage,
+            'current_page' => $leaveRequests->currentPage(),
+            'total_pages' => $leaveRequests->lastPage(),
+        ];
 
         return response()->json([
             'statistics' => $leaveStats,
-            'data' => $leaveRequests
+            'data' => $leaveRequests->items(),
+            'meta' => $metadata,
+            'links' => [
+                'first' => $leaveRequests->url(1),
+                'last' => $leaveRequests->url($leaveRequests->lastPage()),
+                'prev' => $leaveRequests->previousPageUrl(),
+                'next' => $leaveRequests->nextPageUrl(),
+            ]
         ]);
     }
 

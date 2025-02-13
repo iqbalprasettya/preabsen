@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -97,6 +98,11 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return true; // Atau sesuaikan dengan logic akses yang sesuai
+    }
+
+    public function leaveQuotas(): HasMany
+    {
+        return $this->hasMany(LeaveQuota::class);
     }
 
     protected static function booted()
