@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -97,5 +98,24 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return true; // Atau sesuaikan dengan logic akses yang sesuai
+    }
+
+    public function leaveQuotas(): HasMany
+    {
+        return $this->hasMany(LeaveQuota::class);
+    }
+
+    protected static function booted()
+    {
+        // Generate kuota cuti saat user baru dibuat
+        static::created(function ($user) {
+            LeaveQuota::create([
+                'user_id' => $user->id,
+                'year' => now()->year,
+                'annual_quota' => 12,
+                'used_quota' => 0,
+                'remaining_quota' => 12
+            ]);
+        });
     }
 }

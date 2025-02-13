@@ -45,6 +45,7 @@ return [
             'force_delete_any',
             'approve',
             'reject',
+            'toggle_active',
         ],
 
         'page' => 'page',
@@ -72,7 +73,8 @@ return [
         ],
 
         'widgets' => [
-            'AccountWidget', 'FilamentInfoWidget',
+            'AccountWidget',
+            'FilamentInfoWidget',
         ],
 
         'resources' => [],

@@ -83,7 +83,8 @@ class HolidayResource extends Resource
 
                 Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Status')
-                    ->sortable(),
+                    ->sortable()
+                    ->disabled(fn(Holiday $record): bool => ! auth()->user()->can('toggle_active_holiday')),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
