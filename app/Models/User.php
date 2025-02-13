@@ -98,4 +98,18 @@ class User extends Authenticatable implements FilamentUser
     {
         return true; // Atau sesuaikan dengan logic akses yang sesuai
     }
+
+    protected static function booted()
+    {
+        // Generate kuota cuti saat user baru dibuat
+        static::created(function ($user) {
+            LeaveQuota::create([
+                'user_id' => $user->id,
+                'year' => now()->year,
+                'annual_quota' => 12,
+                'used_quota' => 0,
+                'remaining_quota' => 12
+            ]);
+        });
+    }
 }

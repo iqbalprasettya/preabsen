@@ -243,18 +243,22 @@ class AttendanceController extends Controller
     {
         // Validasi parameter bulan dan tahun
         $request->validate([
-            'month' => 'required|numeric|between:1,12',
-            'year' => 'required|numeric|min:2000'
+            'month' => 'nullable|numeric|between:1,12',
+            'year' => 'nullable|numeric|min:2000'
         ]);
 
+        // Gunakan bulan dan tahun dari request atau default ke bulan dan tahun sekarang
+        $month = $request->month ?? now()->month;
+        $year = $request->year ?? now()->year;
+
         // Dapatkan jumlah hari kerja dalam bulan tersebut
-        $totalDays = Carbon::create($request->year, $request->month)->daysInMonth;
+        $totalDays = Carbon::create($year, $month)->daysInMonth;
 
         // Query untuk mendapatkan data kehadiran
         $attendances = $request->user()
             ->attendances()
-            ->whereYear('check_in', $request->year)
-            ->whereMonth('check_in', $request->month)
+            ->whereYear('check_in', $year)
+            ->whereMonth('check_in', $month)
             ->get();
 
         // Hitung jumlah masing-masing status
