@@ -20,10 +20,10 @@ class LeaveRequestController extends Controller
             'per_page' => 'nullable|numeric|min:1|max:100'
         ]);
 
-        // Ambil kuota cuti tahunan
-        $currentYear = now()->year;
+        // Ambil kuota cuti tahunan berdasarkan filter atau tahun sekarang
+        $quotaYear = $request->year ?? now()->year;
         $leaveQuota = $request->user()->leaveQuotas()
-            ->where('year', $currentYear)
+            ->where('year', $quotaYear)
             ->first();
 
         // Query dasar
@@ -47,6 +47,9 @@ class LeaveRequestController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Buat query clone untuk statistik
+        $statsQuery = clone $query;
+
         // Jumlah item per halaman
         $perPage = $request->per_page ?? 10;
 
@@ -61,22 +64,22 @@ class LeaveRequestController extends Controller
             return $item;
         });
 
-        // Hitung statistik cuti
+        // Hitung statistik cuti (diperbarui)
         $leaveStats = [
             'annual_quota' => $leaveQuota ? $leaveQuota->annual_quota : 0,
             'used_quota' => $leaveQuota ? $leaveQuota->used_quota : 0,
             'remaining_quota' => $leaveQuota ? $leaveQuota->remaining_quota : 0,
             'leave_count' => [
-                'total' => $request->user()->leaveRequests()->count(),
-                'pending' => $request->user()->leaveRequests()->where('status', 'pending')->count(),
-                'approved' => $request->user()->leaveRequests()->where('status', 'approved')->count(),
-                'rejected' => $request->user()->leaveRequests()->where('status', 'rejected')->count(),
+                'total' => $statsQuery->count(),
+                'pending' => (clone $statsQuery)->where('status', 'pending')->count(),
+                'approved' => (clone $statsQuery)->where('status', 'approved')->count(),
+                'rejected' => (clone $statsQuery)->where('status', 'rejected')->count(),
             ],
             'leave_by_type' => [
-                'annual' => $request->user()->leaveRequests()->where('type', 'annual')->count(),
-                'sick' => $request->user()->leaveRequests()->where('type', 'sick')->count(),
-                'important' => $request->user()->leaveRequests()->where('type', 'important')->count(),
-                'other' => $request->user()->leaveRequests()->where('type', 'other')->count(),
+                'annual' => (clone $statsQuery)->where('type', 'annual')->count(),
+                'sick' => (clone $statsQuery)->where('type', 'sick')->count(),
+                'important' => (clone $statsQuery)->where('type', 'important')->count(),
+                'other' => (clone $statsQuery)->where('type', 'other')->count(),
             ]
         ];
 
