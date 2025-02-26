@@ -19,7 +19,7 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
-    
+
     protected static ?string $slug = 'settings/users';
 
     protected static ?string $navigationGroup = 'Pengaturan';
@@ -48,9 +48,9 @@ class UserResource extends Resource
                                     ->label('Password')
                                     ->password()
                                     ->revealable()
-                                    ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
-                                    ->required(fn (string $context): bool => $context === 'create')
-                                    ->dehydrated(fn ($state) => filled($state))
+                                    ->dehydrateStateUsing(fn($state) => filled($state) ? bcrypt($state) : null)
+                                    ->required(fn(string $context): bool => $context === 'create')
+                                    ->dehydrated(fn($state) => filled($state))
                                     ->maxLength(255),
                                 Forms\Components\Select::make('departement_id')
                                     ->label('Departemen')
@@ -109,14 +109,14 @@ class UserResource extends Resource
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
                             ->label('Dibuat')
-                            ->content(fn ($record): ?string => $record?->created_at?->diffForHumans()),
+                            ->content(fn($record): ?string => $record?->created_at?->diffForHumans()),
 
                         Forms\Components\Placeholder::make('updated_at')
                             ->label('Terakhir Diubah')
-                            ->content(fn ($record): ?string => $record?->updated_at?->diffForHumans()),
+                            ->content(fn($record): ?string => $record?->updated_at?->diffForHumans()),
                     ])
                     ->columnSpan(['lg' => 1])
-                    ->hidden(fn ($record) => $record === null),
+                    ->hidden(fn($record) => $record === null),
             ])
             ->columns(3);
     }
@@ -191,11 +191,13 @@ class UserResource extends Resource
                 Tables\Filters\TrashedFilter::make()
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

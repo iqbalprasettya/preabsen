@@ -179,45 +179,66 @@ class LeaveRequestResource extends Resource
                     ])
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->visible(fn(LeaveRequest $record): bool => auth()->user()->can('update', $record)),
-                Tables\Actions\DeleteAction::make()
-                    ->visible(fn(LeaveRequest $record): bool => auth()->user()->can('delete', $record)),
-                Tables\Actions\ViewAction::make()
-                    ->visible(fn(LeaveRequest $record): bool => auth()->user()->can('view', $record)),
-                Tables\Actions\Action::make('approve')
-                    ->label('Setujui')
-                    ->icon('heroicon-o-check')
-                    ->color('success')
-                    ->action(function (LeaveRequest $record) {
-                        $record->update([
-                            'status' => 'approved',
-                            'approved_by' => auth()->id(),
-                            'approved_at' => now(),
-                        ]);
-                    })
-                    ->visible(
-                        fn(LeaveRequest $record): bool =>
-                        auth()->user()->can('approve', $record) &&
-                            $record->status === 'pending'
-                    ),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->modalContent(
+                            fn(LeaveRequest $record): Infolist =>
+                            static::infolist(Infolist::make())
+                                ->record($record)
+                        )
+                        ->modalSubmitAction(false)
+                        ->modalCancelAction(false),
 
-                Tables\Actions\Action::make('reject')
-                    ->label('Tolak')
-                    ->icon('heroicon-o-x-mark')
-                    ->color('danger')
-                    ->action(function (LeaveRequest $record) {
-                        $record->update([
-                            'status' => 'rejected',
-                            'approved_by' => auth()->id(),
-                            'approved_at' => now(),
-                        ]);
-                    })
-                    ->visible(
-                        fn(LeaveRequest $record): bool =>
-                        auth()->user()->can('reject', $record) &&
-                            $record->status === 'pending'
-                    ),
+                    Tables\Actions\EditAction::make()
+                        ->modalContent(
+                            fn(LeaveRequest $record, Form $form): Form =>
+                            $form->schema(static::getFormSchema())
+                        )
+                        ->visible(fn(LeaveRequest $record): bool => auth()->user()->can('update', $record)),
+
+                    Tables\Actions\Action::make('approve')
+                        ->label('Setujui')
+                        ->icon('heroicon-o-check')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Setujui Permohonan Cuti')
+                        ->modalDescription('Apakah Anda yakin ingin menyetujui permohonan cuti ini?')
+                        ->action(function (LeaveRequest $record) {
+                            $record->update([
+                                'status' => 'approved',
+                                'approved_by' => auth()->id(),
+                                'approved_at' => now(),
+                            ]);
+                        })
+                        ->visible(
+                            fn(LeaveRequest $record): bool =>
+                            auth()->user()->can('approve', $record) &&
+                                $record->status === 'pending'
+                        ),
+
+                    Tables\Actions\Action::make('reject')
+                        ->label('Tolak')
+                        ->icon('heroicon-o-x-mark')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Tolak Permohonan Cuti')
+                        ->modalDescription('Apakah Anda yakin ingin menolak permohonan cuti ini?')
+                        ->action(function (LeaveRequest $record) {
+                            $record->update([
+                                'status' => 'rejected',
+                                'approved_by' => auth()->id(),
+                                'approved_at' => now(),
+                            ]);
+                        })
+                        ->visible(
+                            fn(LeaveRequest $record): bool =>
+                            auth()->user()->can('reject', $record) &&
+                                $record->status === 'pending'
+                        ),
+
+                    Tables\Actions\DeleteAction::make()
+                        ->visible(fn(LeaveRequest $record): bool => auth()->user()->can('delete', $record)),
+                ])
             ])
             ->bulkActions([]);
     }
@@ -241,11 +262,11 @@ class LeaveRequestResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         $query = static::getModel()::where('status', 'pending');
-        
+
         if (!auth()->user()->hasRole(['super_admin', 'admin'])) {
             $query->where('user_id', auth()->id());
         }
-        
+
         return $query->count();
     }
 
