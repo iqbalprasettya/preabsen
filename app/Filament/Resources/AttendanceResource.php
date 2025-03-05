@@ -36,6 +36,17 @@ class AttendanceResource extends Resource
                             ->schema(static::getTimeLocationFormSchema())
                             ->columns(2),
 
+                        Forms\Components\Section::make('Lokasi Maps')
+                            ->schema([
+                                Forms\Components\View::make('filament.forms.components.attendance-map')
+                            ])
+                            ->columnSpanFull()
+                            ->collapsed(false)
+                            ->collapsible()
+                            ->visible(function ($livewire) {
+                                return $livewire instanceof Pages\ViewAttendance;
+                            }),
+
                         Forms\Components\Section::make('Foto Kehadiran')
                             ->schema(static::getPhotoFormSchema())
                             ->columns(2),
@@ -240,6 +251,7 @@ class AttendanceResource extends Resource
         return [
             'index' => Pages\ListAttendances::route('/'),
             'create' => Pages\CreateAttendance::route('/create'),
+            'view' => Pages\ViewAttendance::route('/{record}'),
             'edit' => Pages\EditAttendance::route('/{record}/edit'),
         ];
     }
