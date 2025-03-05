@@ -74,7 +74,7 @@ class OfficeLocationResource extends Resource
                                             ->label('Radius (meter)')
                                             ->required()
                                             ->numeric()
-                                            ->default(100)
+                                            ->default(20)
                                             ->minValue(1)
                                             ->maxValue(1000)
                                             ->step(1)
@@ -189,5 +189,4 @@ class OfficeLocationResource extends Resource
     {
         return ['name', 'address'];
     }
-
 }
