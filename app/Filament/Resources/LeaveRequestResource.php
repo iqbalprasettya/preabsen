@@ -181,7 +181,7 @@ class LeaveRequestResource extends Resource
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make()
-                        ->modalContent(
+                        ->infolist(
                             fn(LeaveRequest $record): Infolist =>
                             static::infolist(Infolist::make())
                                 ->record($record)
