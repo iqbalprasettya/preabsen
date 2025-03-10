@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\HolidayController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\InformationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,5 +60,9 @@ Route::prefix('v1')->group(function () {
         Route::post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
         Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
         Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
+
+        // Information
+        Route::get('information', [InformationController::class, 'index']);
+        Route::get('information/{id}', [InformationController::class, 'show']);
     });
 });
