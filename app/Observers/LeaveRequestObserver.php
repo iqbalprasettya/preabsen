@@ -36,42 +36,42 @@ class LeaveRequestObserver
      */
     public function updated(LeaveRequest $leaveRequest): void
     {
-        // if (
-        //     $leaveRequest->isDirty('status') &&
-        //     $leaveRequest->status === 'approved' &&
-        //     $leaveRequest->type === 'annual'
-        // ) {
-
-        //     $startDate = \Carbon\Carbon::parse($leaveRequest->start_date);
-        //     $endDate = \Carbon\Carbon::parse($leaveRequest->end_date);
-        //     $durationInDays = $endDate->diffInDays($startDate) + 1;
-
-        //     $quota = $leaveRequest->user->leaveQuotas()
-        //         ->where('year', $startDate->year)
-        //         ->first();
-
-        //     if ($quota) {
-        //         $quota->used_quota += $durationInDays;
-        //         $quota->remaining_quota = $quota->annual_quota - $quota->used_quota;
-        //         $quota->save();
-        //     }
-        // }
         if (
             $leaveRequest->isDirty('status') &&
             $leaveRequest->status === 'approved' &&
-            $leaveRequest->type === 'annual' &&
-            $leaveRequest->getOriginal('status') !== 'approved'
+            $leaveRequest->type === 'annual'
         ) {
 
+            $startDate = \Carbon\Carbon::parse($leaveRequest->start_date);
+            $endDate = \Carbon\Carbon::parse($leaveRequest->end_date);
+            $durationInDays = $endDate->diffInDays($startDate) + 1;
+
             $quota = $leaveRequest->user->leaveQuotas()
-                ->where('year', now()->year)
+                ->where('year', $startDate->year)
                 ->first();
 
             if ($quota) {
-                $quota->increment('used_quota', 1);
-                $quota->decrement('remaining_quota', 1);
+                $quota->used_quota += $durationInDays;
+                $quota->remaining_quota = $quota->annual_quota - $quota->used_quota;
+                $quota->save();
             }
         }
+        // if (
+        //     $leaveRequest->isDirty('status') &&
+        //     $leaveRequest->status === 'approved' &&
+        //     $leaveRequest->type === 'annual' &&
+        //     $leaveRequest->getOriginal('status') !== 'approved'
+        // ) {
+
+        //     $quota = $leaveRequest->user->leaveQuotas()
+        //         ->where('year', now()->year)
+        //         ->first();
+
+        //     if ($quota) {
+        //         $quota->increment('used_quota', 1);
+        //         $quota->decrement('remaining_quota', 1);
+        //     }
+        // }
 
         $recipient = $leaveRequest->user;
 
