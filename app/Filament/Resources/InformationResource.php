@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Forms\Components\RichEditor;
 
 class InformationResource extends Resource
 {
@@ -30,7 +31,7 @@ class InformationResource extends Resource
     protected static ?string $navigationLabel = 'Informasi';
 
     protected static ?string $modelLabel = 'Informasi';
-    
+
     protected static ?string $navigationGroup = 'Pengaturan';
 
 
@@ -53,10 +54,9 @@ class InformationResource extends Resource
                                     ->placeholder('Masukkan judul informasi')
                                     ->columnSpanFull(),
 
-                                Textarea::make('description')
+                                RichEditor::make('description')
                                     ->label('Deskripsi')
                                     ->required()
-                                    ->rows(4)
                                     ->placeholder('Masukkan deskripsi informasi')
                                     ->columnSpanFull(),
                             ]),
@@ -137,7 +137,7 @@ class InformationResource extends Resource
                         $state = $column->getState();
                         return strlen($state) > 50 ? $state : '';
                     })
-                    ->description(fn(Information $record): string => $record->description)
+                    ->description(fn(Information $record): string => str()->limit(strip_tags($record->description), 100))
                     ->wrap(),
                 Tables\Columns\TextColumn::make('category')
                     ->label('Kategori')
